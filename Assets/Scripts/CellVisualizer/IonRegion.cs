@@ -2,53 +2,48 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IonRegion : MonoBehaviour
+public class IonRegion : VisualizerComponent // TODO, add IGraphable maybe
 {
+    private Dictionary<IonType, float[]> _concValues = new Dictionary<IonType, float[]>();
     private Dictionary<IonType, List<Ion>> _ions = new Dictionary<IonType, List<Ion>>();
 
-    private Bounds _bounds;
+    [SerializeField] private Bounds[] _bounds;
 
-    public void Awake() {
-        if (_bounds == default(Bounds)) { Init(); }
+    public override void SetStep(int step) {
+        SetCount(IonType.Sodium, (int)_concValues[IonType.Sodium][step]); // TODO, update how to set count, currently doesnt change ion number cuz difference is so small
+        SetCount(IonType.Potassium, (int)_concValues[IonType.Potassium][step]);
+        SetCount(IonType.Calcium, (int)_concValues[IonType.Calcium][step]);
     }
 
-    private void Init() {
-        Debug.Log("init bounds");
-        _bounds = GetComponent<BoxCollider>().bounds;
-        Debug.Log(_bounds.min);
-        Debug.Log(_bounds.max);
+    public void SetValues(IonType ionType, float[] values) {
+        _concValues[ionType] = values;
     }
 
-
-    public void SetConcentration(IonType ionType, float[] concentration) {
-        if(_bounds == default(Bounds)) { Init(); }
-
+    public void SetCount(IonType ionType, int count) {
         if (!_ions.ContainsKey(ionType)) {
-
-            _ions[IonType.Sodium] = new List<Ion>();
-
-            for (int i = 0; i < concentration[0]; i++) {
-                Ion ion = Cell.Instance.NewIon(ionType);
-                ion.transform.position = Utilities.RandomPointInBounds(_bounds);
-                ion.transform.parent = transform;
-                _ions[ionType].Add(ion);
-            }
+            _ions[ionType] = new List<Ion>();
         }
-        else if (_ions[ionType].Count <= concentration[0]) {
-            while (_ions[ionType].Count < concentration[0]) {
+
+        while (_ions[ionType].Count < count) {
                 Ion ion = Cell.Instance.NewIon(ionType);
-                ion.transform.position = Utilities.RandomPointInBounds(_bounds);
+                int randomBoundIndex = Random.Range(0, _bounds.Length);
+                ion.transform.position = Utilities.RandomPointInBounds(_bounds[randomBoundIndex]);
                 ion.transform.parent = transform;
+                ion.IonBounds = _bounds[randomBoundIndex];
                 _ions[ionType].Add(ion);
-            }
-        } else {
-            while (_ions[ionType].Count > concentration[0]) {
-                GameObject.Destroy(_ions[ionType][0].gameObject);
-            }
         }
-        Debug.Log('c');
-        Debug.Log(concentration[0]);
-        Debug.Log(GetComponentsInChildren<Ion>().Length);
+
+        while (_ions[ionType].Count > count) { // TODO: could change this to make the object inactive instead of destroying it
+            GameObject.Destroy(_ions[ionType][0].gameObject);
+            _ions[ionType].RemoveAt(0);
+        }
+    }
+
+    public void OnDrawGizmosSelected() {
+        Gizmos.color = new Color(1, 0, 0, 0.5f);
+        foreach(Bounds bound in _bounds) {
+            Gizmos.DrawCube(bound.center, bound.size);
+        }
     }
 
 }

@@ -22,7 +22,7 @@ public abstract class CellModel : MonoBehaviour, IGraphable
     public abstract float[] YValues { get; }
 
     public abstract void RunModel();
-    public abstract void StepTime(float deltaTime);
+    public abstract void SetTime(float time);
 
     protected static Dictionary<T1, T2[]> ColumnedArrayToArrayDictionary<T1, T2>(T1[] varNames, T2[] values) {
         Debug.Log(values.Length);

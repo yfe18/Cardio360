@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IonChannel : MonoBehaviour, IGraphable
+public class IonChannel : VisualizerComponent, IGraphable
 {
     [SerializeField] private string _name;
     [SerializeField] private Color _minColor = Color.white;
@@ -20,13 +20,6 @@ public class IonChannel : MonoBehaviour, IGraphable
     public string Name {
         get {
             return _name;
-        }
-    }
-
-    public int Step {
-        set {
-            float percent = (_values[value] - _min) / (_max - _min);
-            _material.color = Color.Lerp(_minColor, _maxColor, percent);
         }
     }
 
@@ -68,5 +61,12 @@ public class IonChannel : MonoBehaviour, IGraphable
         }
 
         InfoUI.Init(this, Cell.SimSpeed);
+    }
+
+     public override void SetStep(int step) {
+        float percent = (_values[step] - _min) / (_max - _min);
+        _material.color = Color.Lerp(_minColor, _maxColor, percent);
+
+        InfoUI.GraphUIComponent.SetXValue(XValues[step]); // TODO remove conversion from xvalue to step back to xvalue
     }
 }

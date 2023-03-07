@@ -9,6 +9,8 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
     [SerializeField] private CellModelType _modelType = CellModelType.TenTussOrigModel;
     [SerializeField] private TenTussOrigModel _tenTussOrigModel;
     [SerializeField] private Ion _calciumIon, _sodiumIon, _potassiumIon; 
+
+    private float _time = 0.0f; // in milliseconds
     
     private CellModel _currentCellModel;
 
@@ -27,7 +29,6 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
     }
 
     void Awake() {
-        Debug.Log("cell has awoken");
         // Singleton
         if (Instance == null) {
             Instance = this;
@@ -44,7 +45,10 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
 
     void Update() {
         if (_currentCellModel) {
-            _currentCellModel.StepTime(Time.deltaTime * _simSpeed);
+            _time += Time.deltaTime * _simSpeed; // treat realtime as ms (1 second -> 1 ms)
+            _cellInfoUI.GraphUIComponent.SetXValue(_time);
+            _currentCellModel.SetTime(_time);
+            //Debug.Log(_time);
         }
     }
 
@@ -58,6 +62,8 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
                 ReplaceCellModel(null);
                 break;
         }
+        _time = 0.0f;
+        _currentCellModel.SetTime(_time);
     }
 
     private void ReplaceCellModel(CellModel model) {

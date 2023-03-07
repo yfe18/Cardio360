@@ -366,7 +366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ac799d72719a3e4b896c2dc680abc97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _graphImage: {fileID: 4273923920927873269}
+  _displayImage: {fileID: 4273923920927873269}
   _speed: 0.1
 --- !u!114 &1691070409
 MonoBehaviour:

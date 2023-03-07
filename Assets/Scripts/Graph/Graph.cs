@@ -28,7 +28,7 @@ public class Graph
 
     public Graph(IGraphable obj) : this(obj.XValues, obj.YValues) {}
 
-    public Texture DrawGraph(int width, int height, int horizontalPadding, int verticalPadding,
+    public GraphImage DrawGraph(int width, int height, int horizontalPadding, int verticalPadding,
         Color bgColor, LineProperties xAxisProperties, LineProperties yAxisProperties, LineProperties seriesProperties,
         bool isSeamless = false)
     {
@@ -86,7 +86,7 @@ public class Graph
         outputText.SetPixels(0, 0, outputText.width, outputText.height, 
             Enumerable.Repeat<Color>(bgColor, outputText.GetPixels().Length).ToArray<Color>()
         );
-        outputText.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), horizontalPadding/2, verticalPadding/2);
+        outputText.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), horizontalPadding/2, verticalPadding/2); // actual axes locations
         outputText.Apply();
 
         commandBuffer.Clear();
@@ -100,19 +100,18 @@ public class Graph
         RenderTexture.active = null;
         renderTexture.Release();
 
-        return outputText;
+        GraphImage outputImage = new GraphImage(outputText, 
+            new int[2]{horizontalPadding/2, horizontalPadding/2 + renderTexture.width}, 
+            new int[2]{verticalPadding/2, verticalPadding/2 + renderTexture.height},
+            xyScale); //copied from above
+
+        return outputImage;
     }
 
     private Vector2 CalculateGraphScale(float[] xValues, float[] yValues, int width, int height) 
     {
-        double maxY = Double.NegativeInfinity;
-        double minY = Double.PositiveInfinity;
-
-        for (int i = 0; i < xValues.Length; i++)
-        {
-            maxY = (yValues[i] > maxY) ? yValues[i] : maxY;
-            minY = (yValues[i] < minY) ? yValues[i] : minY;
-        }
+        double maxY = Mathf.Max(yValues);
+        double minY = Mathf.Min(yValues);
 
         float xScale = (float)(width / (xValues[xValues.Length - 1] - 0));  //x min is defined as 0
 
@@ -144,7 +143,7 @@ public class Graph
         return rasterSpaceOrigin;
     }
 
-    private void CalculateGraphBounds(float[] x_vals, float[] y_vals, int width, int height,
+    private void CalculateGraphBounds(float[] x_vals, float[] y_vals, int width, int height, // unused
         out double[] xAxisBounds, out double[] yAxisBounds, out double[] xyScale)
     {
         double maxY = Double.NegativeInfinity;

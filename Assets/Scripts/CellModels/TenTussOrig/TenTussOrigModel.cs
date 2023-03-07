@@ -15,9 +15,9 @@ public class TenTussOrigModel : CellModel
     [SerializeField] private IonChannel _iKr, _iKs, _iK1, _ito, 
         _iNa, _ibNa, _iNaK, _iCaL, _ibCa, _iNaCa, _irel;
 
-    [SerializeField] private IonRegion _intraRegion;
+    [SerializeField] private IonRegion _intraRegion, _extraRegion;
 
-    private float _time = 0.0f;
+    private float _timeStep = 2f; // time step in data from model
     private int _step = 0;
 
     private Dictionary<string, float[]> _cachedVariables;
@@ -66,23 +66,15 @@ public class TenTussOrigModel : CellModel
         if (_cachedVariables == null) {
             RunModel();
         }
-        _time = 0.0f;
         _step = 0;
     }
 
-    public override void StepTime(float deltaTime) {
-        _time += deltaTime;
+    public override void SetTime(float time) { // time in ms
+        // wraps to start if overflow
+        _step = ((int)(time / _timeStep)) % (_cachedVariables["time"].Length - 1);
 
-        if (_time > (_cachedVariables["time"][_cachedVariables["time"].Length - 1]) / 1000) {
-            _time = 0.0f;
-            _step = 0;
-        }
-
-        if (_time > (_cachedVariables["time"][_step] / 1000)) {
-            _step++;
-            foreach (IonChannel channel in transform.GetComponentsInChildren<IonChannel>()) {
-                channel.Step = _step;
-            }
+        foreach (VisualizerComponent comp in GetComponentsInChildren<VisualizerComponent>()) {
+            comp.SetStep(_step);
         }
     }
 
@@ -102,7 +94,7 @@ public class TenTussOrigModel : CellModel
         }
     }*/
 
-    public override void RunModel() {
+    public override void RunModel() { // TODO: add all variables to model (all currents and all regions)
         int arrlen = 0;
         //IntPtr arrPtr = run(ref arrlen); // original model without medication effects
         IntPtr arrPtr = runtest(ref arrlen, 241, 1190, 1800, 440); //TODO: make sure units are appropriate (currently usin nM)
@@ -115,27 +107,29 @@ public class TenTussOrigModel : CellModel
 
         Dictionary<string, float[]> variables = ColumnedArrayToArrayDictionary<string, float>(_variableNames, flResult);
         _cachedVariables = variables;
-
-        foreach (float val in variables["svolt"]) {
-            Debug.Log(val + "\n");
-        }
-
         SetVisualizations(variables);
     }
 
+    // TODO: currently each channel gets a copy of their own data, may use too much memory. Perhaps switch to setting the value of each as needed
     private void SetVisualizations(Dictionary<string, float[]> variables) {
-        _iKr.SetValues(variables["IKr"]);
+        _iKr.SetValues(variables["IKr"]); // TODO: can change this to loop and just use the name of each channel as the dict index
         _iKs.SetValues(variables["IKs"]);
         _iK1.SetValues(variables["IK1"]);
         _ito.SetValues(variables["Ito"]);
         _iNa.SetValues(variables["INa"]);
-        _ibNa.SetValues(variables["IbNa"]);
+        _ibNa.SetValues(variables["IbNa"]); // TODO: IbNa graphs wrong
         _iNaK.SetValues(variables["INaK"]);
         _iCaL.SetValues(variables["ICaL"]);
-        _ibCa.SetValues(variables["IbCa"]);
+        _ibCa.SetValues(variables["IbCa"]); // TODO: IbCa graphs wrong, both are < 0 and have large offset from x axis
         _iNaCa.SetValues(variables["INaCa"]);
         _irel.SetValues(variables["Irel"]);
         
-        _intraRegion.SetConcentration(IonType.Sodium, variables["Nai"]);
+        _intraRegion.SetValues(IonType.Sodium, variables["Nai"]);
+        _intraRegion.SetValues(IonType.Potassium, variables["Ki"]);
+        _intraRegion.SetValues(IonType.Calcium, variables["Cai"]);
+
+        _extraRegion.SetValues(IonType.Sodium, variables["Nao"]);
+        _extraRegion.SetValues(IonType.Potassium, variables["Ko"]);
+        _extraRegion.SetValues(IonType.Calcium, variables["Cao"]);
     }
 }
