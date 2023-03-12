@@ -28,7 +28,7 @@ public class Graph
 
     public Graph(IGraphable obj) : this(obj.XValues, obj.YValues) {}
 
-    public GraphImage DrawGraph(int width, int height, int horizontalPadding, int verticalPadding,
+    public ModelValue DrawGraph(int width, int height, int horizontalPadding, int verticalPadding,
         Color bgColor, LineProperties xAxisProperties, LineProperties yAxisProperties, LineProperties seriesProperties,
         bool isSeamless = false)
     {
@@ -100,12 +100,12 @@ public class Graph
         RenderTexture.active = null;
         renderTexture.Release();
 
-        GraphImage outputImage = new GraphImage(outputText, 
+        ModelValue outputValue = new ModelValue(yValues, xValues, outputText, 
             new int[2]{horizontalPadding/2, horizontalPadding/2 + renderTexture.width}, 
             new int[2]{verticalPadding/2, verticalPadding/2 + renderTexture.height},
-            xyScale); //copied from above
+            xyScale[0]); //copied from above
 
-        return outputImage;
+        return outputValue;
     }
 
     private Vector2 CalculateGraphScale(float[] xValues, float[] yValues, int width, int height) 

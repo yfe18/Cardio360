@@ -2,13 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IonChannel : VisualizerComponent, IGraphable
+public class IonChannel : VisualizerComponent
 {
     [SerializeField] private string _name;
     [SerializeField] private Color _minColor = Color.white;
     [SerializeField] private Color _maxColor = Color.black;
 
-    private float[] _values;
     private float _min, _max;
 
     private Material _material;
@@ -17,21 +16,9 @@ public class IonChannel : VisualizerComponent, IGraphable
 
     public CellInfoUI InfoUI { get; set; }
 
-    public string Name {
+    public override string Name {
         get {
             return _name;
-        }
-    }
-
-    public float[] XValues {
-        get {
-            return ParentModel.XValues; // may be better to set give ion channel its own x values (and maybe let it time step itself)
-        }
-    }
-
-    public float[] YValues {
-        get {
-            return _values;
         }
     }
 
@@ -50,11 +37,11 @@ public class IonChannel : VisualizerComponent, IGraphable
         }
     }
 
-    public void SetValues(float[] values) {
-        this._values = values;
+    public void SetValues(ModelValue modelValue) {
+        Value = modelValue;
 
-        _min = Mathf.Min(values);
-        _max = Mathf.Max(values);
+        _min = Mathf.Min(Value.yValues);
+        _max = Mathf.Max(Value.yValues);
 
         if (InfoUI == null) { // have to include because setvalues is sometimes called before awake due to activating objects
             Init();
@@ -64,9 +51,8 @@ public class IonChannel : VisualizerComponent, IGraphable
     }
 
      public override void SetStep(int step) {
-        float percent = (_values[step] - _min) / (_max - _min);
+        float percent = (Value.yValues[step] - _min) / (_max - _min);
         _material.color = Color.Lerp(_minColor, _maxColor, percent);
-
-        InfoUI.GraphUIComponent.SetXValue(XValues[step]); // TODO remove conversion from xvalue to step back to xvalue
+        InfoUI.GraphUIComponent.SetXValue(Value.xValues[step]); // TODO remove conversion from xvalue to step back to xvalue
     }
 }

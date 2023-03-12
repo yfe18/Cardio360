@@ -44,26 +44,13 @@ public class TenTussOrigModel : CellModel
         }
     }
 
-    public override float[] XValues {
-        get {
-            return _cachedVariables["time"];
-        }
-    }
-
-    public override float[] YValues {
-        get {
-            return _cachedVariables["svolt"];
-        }
-    }
-
     private string[] _variableNames = new string[19] {"time", "IKr", "IKs", "IK1", "Ito", 
         "INa", "IbNa", "INaK", "ICaL", "IbCa", "INaCa", "Irel", "svolt", "Nai", "Nao", 
         "Ki", "Ko", "Cai", "Cao"
     };
 
     void Awake() {
-        Debug.Log("awoken");
-        if (_cachedVariables == null) {
+        if (!IsInitiated) {
             RunModel();
         }
         _step = 0;
@@ -77,22 +64,6 @@ public class TenTussOrigModel : CellModel
             comp.SetStep(_step);
         }
     }
-
-    /*void Update() {
-        _time += (Time.deltaTime * SimSpeed);
-
-        if (_time > (_cachedVariables["time"][_cachedVariables["time"].Length - 1]) / 1000) {
-            _time = 0.0f;
-            _step = 0;
-        }
-
-        if (_time > (_cachedVariables["time"][_step] / 1000)) {
-            _step++;
-            foreach (IonChannel channel in transform.GetComponentsInChildren<IonChannel>()) {
-                channel.Step = _step;
-            }
-        }
-    }*/
 
     public override void RunModel() { // TODO: add all variables to model (all currents and all regions)
         int arrlen = 0;
@@ -108,21 +79,24 @@ public class TenTussOrigModel : CellModel
         Dictionary<string, float[]> variables = ColumnedArrayToArrayDictionary<string, float>(_variableNames, flResult);
         _cachedVariables = variables;
         SetVisualizations(variables);
+        IsInitiated = true;
     }
 
     // TODO: currently each channel gets a copy of their own data, may use too much memory. Perhaps switch to setting the value of each as needed
     private void SetVisualizations(Dictionary<string, float[]> variables) {
-        _iKr.SetValues(variables["IKr"]); // TODO: can change this to loop and just use the name of each channel as the dict index
-        _iKs.SetValues(variables["IKs"]);
-        _iK1.SetValues(variables["IK1"]);
-        _ito.SetValues(variables["Ito"]);
-        _iNa.SetValues(variables["INa"]);
-        _ibNa.SetValues(variables["IbNa"]); // TODO: IbNa graphs wrong
-        _iNaK.SetValues(variables["INaK"]);
-        _iCaL.SetValues(variables["ICaL"]);
-        _ibCa.SetValues(variables["IbCa"]); // TODO: IbCa graphs wrong, both are < 0 and have large offset from x axis
-        _iNaCa.SetValues(variables["INaCa"]);
-        _irel.SetValues(variables["Irel"]);
+        Value = GraphValues(variables["time"], variables["svolt"]);
+
+        _iKr.SetValues(GraphValues(variables["time"], variables["IKr"])); // TODO: can change this to loop and just use the name of each channel as the dict index
+        _iKs.SetValues( GraphValues(variables["time"], variables["IKs"]));
+        _iK1.SetValues(GraphValues(variables["time"], variables["IK1"]));
+        _ito.SetValues(GraphValues(variables["time"], variables["Ito"]));
+        _iNa.SetValues(GraphValues(variables["time"], variables["INa"]));
+        _ibNa.SetValues(GraphValues(variables["time"], variables["IbNa"])); // TODO: IbNa graphs wrong
+        _iNaK.SetValues(GraphValues(variables["time"], variables["INaK"]));
+        _iCaL.SetValues(GraphValues(variables["time"], variables["ICaL"]));
+        _ibCa.SetValues(GraphValues(variables["time"], variables["IbCa"])); // TODO: IbCa graphs wrong, both are < 0 and have large offset from x axis
+        _iNaCa.SetValues(GraphValues(variables["time"], variables["INaCa"]));
+        _irel.SetValues(GraphValues(variables["time"], variables["Irel"]));
         
         _intraRegion.SetValues(IonType.Sodium, variables["Nai"]);
         _intraRegion.SetValues(IonType.Potassium, variables["Ki"]);
@@ -131,5 +105,11 @@ public class TenTussOrigModel : CellModel
         _extraRegion.SetValues(IonType.Sodium, variables["Nao"]);
         _extraRegion.SetValues(IonType.Potassium, variables["Ko"]);
         _extraRegion.SetValues(IonType.Calcium, variables["Cao"]);
+    }
+
+    private ModelValue GraphValues(float[] xValues, float[] yValues) {
+        Graph graph = new Graph(xValues, yValues);
+        return graph.DrawGraph(1024, 512, 0, 20, Color.white, new LineProperties(5, Color.red), LineProperties.NONE,
+            new LineProperties(10, Color.black));
     }
 }

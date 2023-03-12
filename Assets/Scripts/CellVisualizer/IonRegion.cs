@@ -2,21 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IonRegion : VisualizerComponent // TODO, add IGraphable maybe
+public class IonRegion : VisualizerComponent
 {
     private Dictionary<IonType, float[]> _concValues = new Dictionary<IonType, float[]>();
     private Dictionary<IonType, List<Ion>> _ions = new Dictionary<IonType, List<Ion>>();
 
     [SerializeField] private Bounds[] _bounds;
+    [SerializeField] private string _name;
+
+    public override string Name {
+        get {return _name;}
+    }
+
+    private bool _isInitiated = false;
+    public bool IsInitiated {
+        get { return _isInitiated;} 
+        protected set { _isInitiated = value;}
+    }
+
 
     public override void SetStep(int step) {
-        SetCount(IonType.Sodium, (int)_concValues[IonType.Sodium][step]); // TODO, update how to set count, currently doesnt change ion number cuz difference is so small
-        SetCount(IonType.Potassium, (int)_concValues[IonType.Potassium][step]);
-        SetCount(IonType.Calcium, (int)_concValues[IonType.Calcium][step]);
+        if(IsInitiated) {
+            SetCount(IonType.Sodium, (int)_concValues[IonType.Sodium][step]); // TODO, update how to set count, currently doesnt change ion number cuz difference is so small
+            SetCount(IonType.Potassium, (int)_concValues[IonType.Potassium][step]);
+            SetCount(IonType.Calcium, (int)_concValues[IonType.Calcium][step]);
+        }
     }
 
     public void SetValues(IonType ionType, float[] values) {
         _concValues[ionType] = values;
+        IsInitiated = true;
     }
 
     public void SetCount(IonType ionType, int count) {

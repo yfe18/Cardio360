@@ -10,7 +10,13 @@ public class GraphUI : MonoBehaviour
     private RectTransform _imageContainer; // is set to this object
     private RawImage[] _duplicateImages;
 
-    private GraphImage _graphImage;
+    private ModelValue _modelValue;
+
+    private bool _isInitiated = false;
+    public bool IsInitiated {
+        get { return _isInitiated;}
+        private set {_isInitiated = value;}
+    }
 
     public bool IsPlaying {
         get;
@@ -21,27 +27,25 @@ public class GraphUI : MonoBehaviour
         get { return _speed;  }
         set { _speed = value; }
     }
+    // TODO: Implement adding separate axes and plot
+    public void Init(ModelValue modelValue) { // TODO: change to a SetImage func
+        _modelValue = modelValue;
+        Debug.Log(modelValue.plot);
+        _displayImage.texture = _modelValue.plot;
+        _displayImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _imageContainer.rect.height);
+        _displayImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _imageContainer.rect.height * ((float)_modelValue.plot.width/_modelValue.plot.height));
+        _displayImage.rectTransform.anchoredPosition = new Vector2(-_displayImage.rectTransform.rect.width, 0);
 
-    public GraphImage Image { // TODO: change to a SetImage func
-        get {
-            return _graphImage;
+        int imageCount = (int)(Mathf.Ceil(_imageContainer.rect.width / _modelValue.plot.width)) + 1;
+
+        _duplicateImages = new RawImage[imageCount];
+        
+        for (int i = 0; i < imageCount; i++) {
+            _duplicateImages[i] = GameObject.Instantiate<RawImage>(_displayImage, _imageContainer);
+            _duplicateImages[i].rectTransform.anchoredPosition = new Vector2(_displayImage.rectTransform.rect.width * i, 0);
         }
-        set {
-            _graphImage = value;
-            _displayImage.texture = _graphImage.image;
-            _displayImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _imageContainer.rect.height);
-            _displayImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, _imageContainer.rect.height * ((float)_graphImage.image.width/_graphImage.image.height));
-            _displayImage.rectTransform.anchoredPosition = new Vector2(-_displayImage.rectTransform.rect.width, 0);
-
-            int imageCount = (int)(Mathf.Ceil(_imageContainer.rect.width / _graphImage.image.width)) + 1;
-
-            _duplicateImages = new RawImage[imageCount];
-            
-            for (int i = 0; i < imageCount; i++) {
-                _duplicateImages[i] = GameObject.Instantiate<RawImage>(_displayImage, _imageContainer);
-                _duplicateImages[i].rectTransform.anchoredPosition = new Vector2(_displayImage.rectTransform.rect.width * i, 0);
-            }
-        }
+    
+        IsInitiated = true;
     }
     
     void Awake() {
@@ -58,7 +62,7 @@ public class GraphUI : MonoBehaviour
     }
 
     public void Play() {
-        if (Image.image) {
+        if (IsInitiated) {
             IsPlaying = true;
         }
     }
@@ -69,8 +73,8 @@ public class GraphUI : MonoBehaviour
     }
 
     public void SetXValue(float xValue) { // TODO: could just make it step
-        int imageX = _graphImage.GraphPositionToImagePosition(xValue, 0)[0];
-        float displayX = (_displayImage.rectTransform.rect.width / _graphImage.image.width) * imageX; // TODO: move to central scale variable, bc this is set multiple times
+        int imageX = _modelValue.GraphXToImageX(xValue);
+        float displayX = (_displayImage.rectTransform.rect.width / _modelValue.plot.width) * imageX; // TODO: move to central scale variable, bc this is set multiple times
 
         ResetImages(_displayImage, _duplicateImages);
 

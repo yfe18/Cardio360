@@ -7,23 +7,33 @@ using System.Reflection;
 
 
 public enum CellModelType {
-    TenTussOrigModel
+    TenTussOrigModel,
+    TenTussNetworkModel
 }
 
-public abstract class CellModel : MonoBehaviour, IGraphable
+public abstract class CellModel : VisualizerComponent
 {
-    public abstract string Name { get; }
+    public override abstract string Name { get; }
     public abstract string CurrentUnits { get; }
     public abstract string ConcentrationUnits { get; }
 
     public abstract string TimeUnits { get; }
 
-    public abstract float[] XValues { get; }
-    public abstract float[] YValues { get; }
+    private bool _isInitiated = false;
+    public bool IsInitiated {
+        get { return _isInitiated;} 
+        protected set { _isInitiated = value;}
+    }
 
     public abstract void RunModel();
     public abstract void SetTime(float time);
 
+    public override void SetStep(int step) // just so I can use VisualizerComponent TODO: change visualizer component to not have setstep, put that in a new class
+    {
+        //throw new NotImplementedException();
+    }
+
+    // TODO: move to utilites
     protected static Dictionary<T1, T2[]> ColumnedArrayToArrayDictionary<T1, T2>(T1[] varNames, T2[] values) {
         Debug.Log(values.Length);
         Debug.Log(varNames.Length);
