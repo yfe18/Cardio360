@@ -19,6 +19,7 @@ public static class APIManager
     private struct ResponseValueData {   
         public string varname;
         public string plot_path, y_axis_path, x_axis_path;
+        public RectInt plot_bbox;
         public List<float> data;
     }
 
@@ -53,8 +54,8 @@ public static class APIManager
 
             ResponseData response = JsonUtility.FromJson<ResponseData>(request.downloadHandler.text);
 
-            ModelData outputData = new ModelData(response.time_step);
-            outputData.timeValues = response.time_values;
+            ModelData outputModelData = new ModelData(response.time_step);
+            outputModelData.timeValues = response.time_values;
 
             UriBuilder imgUriBuilder = new UriBuilder(BASE_API_URL);
 
@@ -66,8 +67,6 @@ public static class APIManager
             // get plot and y axis for each
             foreach(ResponseValueData valueData in response.values) {
 
-                
-
                 Texture plotImage = Texture2D.blackTexture, yAxisImage = Texture2D.blackTexture;
 
                 imgUriBuilder.Path = valueData.plot_path;
@@ -76,13 +75,13 @@ public static class APIManager
                 imgUriBuilder.Path = valueData.y_axis_path;
                 yield return DownloadImage(imgUriBuilder.Uri, (Texture texture) => {yAxisImage = texture;});
 
-                ModelValue newModelValue = new ModelValue(valueData.data.ToArray(), outputData.timeValues.ToArray(),
-                    plotImage, xAxisImage, yAxisImage);
+                ModelValue newModelValue = new ModelValue(valueData.data.ToArray(), outputModelData.timeValues.ToArray(),
+                    plotImage, xAxisImage, yAxisImage, valueData.plot_bbox);
 
-                outputData.modelValues[valueData.varname] = newModelValue;
+                outputModelData.modelValues[valueData.varname] = newModelValue;
             }
 
-            returnCallback(outputData, "");
+            returnCallback(outputModelData, "");
         }
     }
 

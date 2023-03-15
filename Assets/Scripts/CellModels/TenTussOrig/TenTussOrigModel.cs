@@ -17,6 +17,8 @@ public class TenTussOrigModel : CellModel
 
     [SerializeField] private IonRegion _intraRegion, _extraRegion;
 
+    [SerializeField] private CellInfoUI _voltageUI;
+
     private float _timeStep = 2f; // time step in data from model
     private int _step = 0;
 
@@ -52,6 +54,7 @@ public class TenTussOrigModel : CellModel
     void Awake() {
         if (!IsInitiated) {
             RunModel();
+            _voltageUI.Init(this, Cell.SimSpeed);
         }
         _step = 0;
     }
@@ -63,6 +66,11 @@ public class TenTussOrigModel : CellModel
         foreach (VisualizerComponent comp in GetComponentsInChildren<VisualizerComponent>()) {
             comp.SetStep(_step);
         }
+    }
+
+    public override void SetStep(int step)
+    {
+        _voltageUI.GraphUIComponent.SetXValue(Value.xValues[step]);
     }
 
     public override void RunModel() { // TODO: add all variables to model (all currents and all regions)

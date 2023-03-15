@@ -100,10 +100,10 @@ public class Graph
         RenderTexture.active = null;
         renderTexture.Release();
 
+        Debug.Log(outputText);
+
         ModelValue outputValue = new ModelValue(yValues, xValues, outputText, 
-            new int[2]{horizontalPadding/2, horizontalPadding/2 + renderTexture.width}, 
-            new int[2]{verticalPadding/2, verticalPadding/2 + renderTexture.height},
-            xyScale[0]); //copied from above
+            new RectInt(horizontalPadding/2, verticalPadding/2, renderTexture.width, renderTexture.height), xyScale[0]); //copied from above
 
         return outputValue;
     }

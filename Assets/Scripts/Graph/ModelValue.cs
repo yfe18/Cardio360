@@ -2,9 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO: Might be better to separate layout data from value data
 public readonly struct ModelValue
 {
-    public readonly int[] xAxisPosBounds, yAxisPosBounds; //pos bounds are the the image coords where each axis starts and ends
+    public readonly RectInt plotBbox;
     public readonly float xScale; // scale from values to size
     public readonly Texture plot, xAxis, yAxis;
     public readonly float[] yValues, xValues;
@@ -13,31 +14,26 @@ public readonly struct ModelValue
     // axis pos bounds are used for entire imag
     // the total bounds of the plot and axes centered and stacked on top of each other
 
-    public ModelValue(float[] yValues, float[] xValues, Texture plot, int[] xAxisPosBounds, int[] yAxisPosBounds,
+    public ModelValue(float[] yValues, float[] xValues, Texture plot, RectInt plotBbox,
         float xScale)  // TODO: all int[] should be two long, might switch to proper data type
     { 
         this.yValues = yValues;
         this.xValues = xValues;
         this.plot = plot;
-        this.xAxisPosBounds = xAxisPosBounds;
-        this.yAxisPosBounds = yAxisPosBounds;
+        this.plotBbox = plotBbox;
         this.xScale = xScale; // I don't think we need xyScale given, can calculate
         this.xAxis = null;
         this.yAxis = null;
-
-        Debug.Log(xScale);
-        Debug.Log(CalculateXScale(plot.width, plot.width, xValues));
     }
 
-    public ModelValue(float[] yValues, float[] xValues, Texture plot, Texture xAxis, Texture yAxis)  
+    public ModelValue(float[] yValues, float[] xValues, Texture plot, Texture xAxis, Texture yAxis, RectInt plotBbox)  
     { 
         this.yValues = yValues;
         this.xValues = xValues;
         this.plot = plot;
         int xHalfPadding = (int)((xAxis.width - plot.width) / 2f);
         int yHalfPadding = (int)((yAxis.height - plot.height) / 2f);
-        this.xAxisPosBounds = new int[] {xHalfPadding, xHalfPadding + xAxis.width}; 
-        this.yAxisPosBounds = new int[] {yHalfPadding, yHalfPadding + yAxis.height};
+        this.plotBbox = plotBbox;
         this.xScale = 0; // to get around error
         this.xAxis = xAxis;
         this.yAxis = yAxis;
@@ -51,13 +47,5 @@ public readonly struct ModelValue
         float xMin = Mathf.Min(xValues);
 
         return (plotWidth / (xMax - xMin));
-    }
-
-    public int GraphXToImageX(float graphX) {
-        int x = (int)((graphX * xScale) + xAxisPosBounds[0]); // TODO: maybe adding clamping to bounds
-
-        Debug.Log(graphX + " : " + x);
-
-        return x;
     }
 }

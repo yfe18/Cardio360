@@ -5,9 +5,10 @@ using UnityEngine;
 public class Cell : MonoBehaviour, IInteractable // basically gamemanager
 {
     [SerializeField] private float _simSpeed = 1.0f;
-    [SerializeField] private CellInfoUI _cellInfoUI;
+    [SerializeField] private int _simStopTime = 1000;
+    [SerializeField] private float _naIonDisplayMult, _kIonDisplayMult, _caIonDisplayMult;
     [SerializeField] private CellModelType _modelType = CellModelType.TenTussOrigModel;
-    [SerializeField] private CellModel _tenTussOrigModel, _tenTussNetworkModel;
+    [SerializeField] private CellModel _tenTussOrigModel, _tenTussNetworkModel, _tenTussNetwork3DModel;
     [SerializeField] private Ion _calciumIon, _sodiumIon, _potassiumIon; 
 
     private float _time = 0.0f; // in milliseconds
@@ -28,6 +29,17 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
         }
     }
 
+    public static int SimStopTime {
+        get {
+            return Instance._simStopTime;
+        }
+    }
+
+    public static Dictionary<IonType, float> IonDisplayMult {
+        get;
+        private set;
+    }
+
     void Awake() {
         // Singleton
         if (Instance == null) {
@@ -36,7 +48,11 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
             GameObject.Destroy(this);
         }
 
-        _cellInfoUI.GraphUIComponent.Speed = _simSpeed;
+        IonDisplayMult = new Dictionary<IonType, float>() {
+            { IonType.Sodium, _naIonDisplayMult },
+            { IonType.Potassium, _kIonDisplayMult },
+            { IonType.Calcium, _caIonDisplayMult }
+        };
     }
 
     void Start() {
@@ -46,7 +62,6 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
     void Update() {
         if (_currentCellModel) {
             _time += Time.deltaTime * _simSpeed; // treat realtime as ms (1 second -> 1 ms)
-            _cellInfoUI.GraphUIComponent.SetXValue(_time);
             _currentCellModel.SetTime(_time);
         }
     }
@@ -59,6 +74,9 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
                 break;
             case CellModelType.TenTussNetworkModel:
                 yield return ReplaceCellModel(_tenTussNetworkModel);
+                break;
+            case CellModelType.TenTussNetwork3DModel:
+                yield return ReplaceCellModel(_tenTussNetwork3DModel);
                 break;
             default:
                 yield return ReplaceCellModel(null);
@@ -77,8 +95,6 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
             model.gameObject.SetActive(true);
 
             yield return new WaitUntil(() => {return model.IsInitiated;});
-
-            _cellInfoUI.Init(model, SimSpeed);
         }
 
         _currentCellModel = model;

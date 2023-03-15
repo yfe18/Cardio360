@@ -8,7 +8,8 @@ using System.Reflection;
 
 public enum CellModelType {
     TenTussOrigModel,
-    TenTussNetworkModel
+    TenTussNetworkModel,
+    TenTussNetwork3DModel
 }
 
 public abstract class CellModel : VisualizerComponent
@@ -27,11 +28,6 @@ public abstract class CellModel : VisualizerComponent
 
     public abstract void RunModel();
     public abstract void SetTime(float time);
-
-    public override void SetStep(int step) // just so I can use VisualizerComponent TODO: change visualizer component to not have setstep, put that in a new class
-    {
-        //throw new NotImplementedException();
-    }
 
     // TODO: move to utilites
     protected static Dictionary<T1, T2[]> ColumnedArrayToArrayDictionary<T1, T2>(T1[] varNames, T2[] values) {
