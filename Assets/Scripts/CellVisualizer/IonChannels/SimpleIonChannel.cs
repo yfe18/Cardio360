@@ -13,14 +13,10 @@ public class SimpleIonChannel : IonChannel
 
     public CellInfoUI InfoUI { get; set; }
 
-    protected override void Init()
-    {
-        base.Init();
-        _material = GetComponent<Renderer>().material;
+    public override void Awake() {
+        base.Awake();
 
-        InfoUI = UIManager.NewUI<CellInfoUI>();
-        InfoUI.transform.SetParent(this.transform);
-        InfoUI.transform.localPosition = new Vector3(0, this.transform.localScale.y, 0);
+        _material = GetComponent<Renderer>().material;
     }
 
     public override void SetValues(ModelValue modelValue) {
@@ -30,10 +26,12 @@ public class SimpleIonChannel : IonChannel
         _max = Mathf.Max(Value.yValues);
 
         if (InfoUI == null) { // have to include because setvalues is sometimes called before awake due to activating objects
-            Init();
+            InfoUI = UIManager.NewUI<CellInfoUI>();
+            InfoUI.transform.SetParent(this.transform);
+            InfoUI.transform.localPosition = new Vector3(0, this.transform.localScale.y, 0);
         }
 
-        InfoUI.Init(this, Cell.SimSpeed);
+        InfoUI.Init(this);
     }
 
      public override void SetStep(int step) {

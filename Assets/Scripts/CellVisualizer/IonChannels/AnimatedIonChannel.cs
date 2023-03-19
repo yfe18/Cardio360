@@ -10,15 +10,6 @@ public class AnimatedIonChannel : IonChannel
 
     private float _min, _max;
 
-    protected override void Init()
-    {
-        base.Init();
-
-        InfoUI = UIManager.NewUI<CellInfoUI>();
-        InfoUI.transform.SetParent(this.transform);
-        InfoUI.transform.position = this.transform.position + new Vector3(0, 10, 0); // TODO: replace 10 with serializedfield for info ui displacement
-    }
-
     public override void SetValues(ModelValue modelValue)
     {
         base.SetValues(modelValue);
@@ -27,10 +18,12 @@ public class AnimatedIonChannel : IonChannel
         _max = Mathf.Max(Value.yValues);
 
         if (InfoUI == null) { // have to include because setvalues is sometimes called before awake due to activating objects
-            Init();
+            InfoUI = UIManager.NewUI<CellInfoUI>();
+            InfoUI.transform.SetParent(this.transform);
+            InfoUI.transform.position = this.transform.position + new Vector3(0, 10, 0); // TODO: replace 10 with serializedfield for info ui displacement
         }
 
-        InfoUI.Init(this, Cell.SimSpeed);
+        InfoUI.Init(this);
     }
     
     public override void SetStep(int step) {

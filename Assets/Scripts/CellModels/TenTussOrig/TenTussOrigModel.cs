@@ -51,12 +51,26 @@ public class TenTussOrigModel : CellModel
         "Ki", "Ko", "Cai", "Cao"
     };
 
-    void Awake() {
+    public override void RunModel() { // TODO: add all variables to model (all currents and all regions)
         if (!IsInitiated) {
-            RunModel();
             _voltageUI.Init(this, Cell.SimSpeed);
         }
-        _step = 0;
+        
+        int arrlen = 0;
+        //IntPtr arrPtr = run(ref arrlen); // original model without medication effects
+        IntPtr arrPtr = runtest(ref arrlen, 241, 1190, 1800, 440); //TODO: make sure units are appropriate (currently usin nM)
+
+        double[] result = new double[arrlen];
+
+        Marshal.Copy(arrPtr, result, 0, arrlen);
+
+        float[] flResult = Array.ConvertAll<double, float>(result, x => (float)x);
+
+        Dictionary<string, float[]> variables = ColumnedArrayToArrayDictionary<string, float>(_variableNames, flResult);
+        _cachedVariables = variables;
+        SetVisualizations(variables);
+        
+        IsInitiated = true;
     }
 
     public override void SetTime(float time) { // time in ms
@@ -73,22 +87,7 @@ public class TenTussOrigModel : CellModel
         _voltageUI.GraphUIComponent.SetXValue(Value.xValues[step]);
     }
 
-    public override void RunModel() { // TODO: add all variables to model (all currents and all regions)
-        int arrlen = 0;
-        //IntPtr arrPtr = run(ref arrlen); // original model without medication effects
-        IntPtr arrPtr = runtest(ref arrlen, 241, 1190, 1800, 440); //TODO: make sure units are appropriate (currently usin nM)
-
-        double[] result = new double[arrlen];
-
-        Marshal.Copy(arrPtr, result, 0, arrlen);
-
-        float[] flResult = Array.ConvertAll<double, float>(result, x => (float)x);
-
-        Dictionary<string, float[]> variables = ColumnedArrayToArrayDictionary<string, float>(_variableNames, flResult);
-        _cachedVariables = variables;
-        SetVisualizations(variables);
-        IsInitiated = true;
-    }
+    
 
     // TODO: currently each channel gets a copy of their own data, may use too much memory. Perhaps switch to setting the value of each as needed
     private void SetVisualizations(Dictionary<string, float[]> variables) {

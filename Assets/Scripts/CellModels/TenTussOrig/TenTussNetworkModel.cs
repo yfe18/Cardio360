@@ -35,13 +35,6 @@ public class TenTussNetworkModel : CellModel
         }
     }
 
-    void Awake() {
-        if (!IsInitiated) {
-            RunModel();
-        }
-        _step = 0;
-    }
-
     public override void RunModel() {
         StartCoroutine(APIManager.RunModelServer("dynamic", Cell.SimStopTime, (ModelData? modelData, string errMessage) => {
             if (modelData.HasValue) {

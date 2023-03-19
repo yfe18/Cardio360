@@ -15,17 +15,11 @@ public abstract class IonChannel : VisualizerComponent
 
     public CellModel ParentModel { get; private set; }
 
-    protected virtual void Init() {
+    public virtual void Awake() {
         if (_name == "") {
             _name = gameObject.name;
         }
         ParentModel = GetComponentInParent<CellModel>();
-    }
-
-    void Awake() {
-        if (ParentModel == null) {
-            Init();
-        }
     }
 
     public virtual void SetValues(ModelValue modelValue) {

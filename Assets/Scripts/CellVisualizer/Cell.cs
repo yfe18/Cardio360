@@ -53,14 +53,20 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
             { IonType.Potassium, _kIonDisplayMult },
             { IonType.Calcium, _caIonDisplayMult }
         };
+
+        
     }
 
-    void Start() {
+    void Start() { // TEMP: for testing
+        NewRun(); // TEMP
+    }
+
+    void NewRun() {
         StartCoroutine(LoadCellModel(_modelType));
     }
 
     void Update() {
-        if (_currentCellModel) {
+        if (_currentCellModel?.IsInitiated == true) {
             _time += Time.deltaTime * _simSpeed; // treat realtime as ms (1 second -> 1 ms)
             _currentCellModel.SetTime(_time);
         }
@@ -87,12 +93,13 @@ public class Cell : MonoBehaviour, IInteractable // basically gamemanager
     }
 
     private IEnumerator ReplaceCellModel(CellModel model) {
-        foreach (Transform child in transform) { // assuming only children of this gameobject are the models
+        foreach (Transform child in transform) { // assuming the only children of this gameobject are the models
             child.gameObject.SetActive(false);
         }
 
         if (model != null) {
             model.gameObject.SetActive(true);
+            model.RunModel();
 
             yield return new WaitUntil(() => {return model.IsInitiated;});
         }

@@ -27,9 +27,9 @@ public class IonRegion : VisualizerComponent
             float absPotassiumCount = _concValues.TryGetValue(IonType.Potassium, out float[] potassiumCounts) ? potassiumCounts[step] : 0;
             float absCalciumCount = _concValues.TryGetValue(IonType.Calcium, out float[] calciumCounts) ? calciumCounts[step] : 0;
 
-            absSodiumCount *= Cell.IonDisplayMult[IonType.Sodium];
-            absPotassiumCount *= Cell.IonDisplayMult[IonType.Potassium];
-            absCalciumCount *= Cell.IonDisplayMult[IonType.Calcium];
+            absSodiumCount *= VisualizationManager.IonDisplayMult[IonType.Sodium];
+            absPotassiumCount *= VisualizationManager.IonDisplayMult[IonType.Potassium];
+            absCalciumCount *= VisualizationManager.IonDisplayMult[IonType.Calcium];
 
             SetCount(IonType.Sodium, (int)absSodiumCount); // TODO, update how to set count, currently doesnt change ion number cuz difference is so small
             SetCount(IonType.Potassium, (int)absPotassiumCount);
@@ -48,7 +48,7 @@ public class IonRegion : VisualizerComponent
         }
 
         while (_ions[ionType].Count < count) {
-                Ion ion = Cell.Instance.NewIon(ionType);
+                Ion ion = VisualizationManager.Instance.NewIon(ionType);
                 int randomBoundIndex = Random.Range(0, _bounds.Length);
                 ion.transform.position = Utilities.RandomPointInBounds(_bounds[randomBoundIndex]);
                 ion.transform.parent = transform;
