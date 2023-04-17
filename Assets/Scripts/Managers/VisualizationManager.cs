@@ -61,8 +61,6 @@ public class VisualizationManager : MonoBehaviour
         }
 
         IsRunning = false;
-
-        RunSimulation(new Simulation("dynamic", _simStopTime)); // TEMP
     }
 
     public void RunSimulation(Simulation simulation) {

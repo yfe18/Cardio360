@@ -4647,7 +4647,7 @@ GameObject:
   - component: {fileID: 1506588416}
   - component: {fileID: 1506588415}
   m_Layer: 0
-  m_Name: CellManager
+  m_Name: VisualizationManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
